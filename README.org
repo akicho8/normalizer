@@ -1,11 +1,50 @@
 #+OPTIONS: toc:nil num:nil author:nil creator:nil \n:nil |:t
 #+OPTIONS: @:t ::t ^:t -:t f:t *:t <:t
 
-* Examples
+* ActiveRecordのカラム値を簡単に正規化する仕組み
 
-: class Article < ActiveRecord::Base
-:   normalize :name, :hankaku => true, :strip_tags => true, :strip => true
-: end
-: 
-: article = Article.create!(:name => "<i>ｆｏｏ</i>　")
-: article.name # => "foo"
+#+BEGIN_SRC ruby
+class Book < ActiveRecord::Base
+  with_options(:hankaku => true, :strip => true) do |o|
+    o.normalize :title, :strip_tags => true
+    o.normalize :body, :enter => true
+  end
+end
+
+article = Book.create!(:title => "<b>Ｒａｉｌｓの本</b>　")
+article.title # => "Railsの本"
+#+END_SRC
+
+** 機能一覧
+
+   #+ATTR_HTML: border="1" rules="all" frame="all"
+   | シンボル       | 意味                    |
+   |----------------+-------------------------|
+   | hankaku        | 英数字を半角化          |
+   | hiragana       | カタカナをひらがな化    |
+   | strip_tags     | タグを外す              |
+   | scrub          | 不正なバイト列を除去    |
+   | space_zentohan | 全角スペースを半角化    |
+   | enter          | \r\n を \n に統一       |
+   | strip          | 前後の半角スペース除去  |
+   | squish         | activesupport の squish |
+   | truncate       | 指定文字数で切る        |
+   | blank_to_nil   | blank? なら nil にする  |
+   | to_s           | 最後に to_s する        |
+
+** 単体の機能としても使える
+
+#+BEGIN_SRC ruby
+Normalizer.normalize("ｒｕｂｙ　ｏｎ　ｒａｉｌｓ", :hankaku => true) # => "ruby on rails"
+Normalizer.normalize("ドラえもん", :katakana => true)                # => "ドラエモン"
+Normalizer.normalize("ドラえもん", :hiragana => true)                # => "どらえもん"
+Normalizer.normalize("<b>ドラえもん</b>", :strip_tags => true)       # => "ドラえもん"
+Normalizer.normalize("ドラ\xffえもん", :scrub => true)               # => "ドラえもん"
+Normalizer.normalize("ruby　on　rails", :space_zentohan => true)     # => "ruby on rails"
+Normalizer.normalize("foo\r\nbar\r\n", :enter => true)               # => "foo\nbar\n"
+Normalizer.normalize(" ドラえもん ", :strip => true)                 # => "ドラえもん"
+Normalizer.normalize("  ruby  on  rails  ", :squish => true)         # => "ruby on rails"
+Normalizer.normalize("ドラえもん", :truncate => 2)                   # => "ドラ"
+Normalizer.normalize(" ", :blank_to_nil => true)                     # => nil
+Normalizer.normalize(nil, :to_s => true)                             # => ""
+#+END_SRC

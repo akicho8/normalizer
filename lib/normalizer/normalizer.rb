@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-# require "normalizer/version"
-#
 require "active_support/core_ext/class/subclasses"
 require "active_support/core_ext/module/concerning"
 require "active_support/core_ext/module/attribute_accessors"
@@ -34,6 +32,7 @@ module Normalizer
     :hiragana,
     :strip_tags,
     :multi_byte,
+    :scrub,
     :space_zentohan,
     :enter,
     :strip,

@@ -26,6 +26,7 @@ class TestNormalizer < Test::Unit::TestCase
     assert_equal "アア", arg_test("あア", :katakana => true)
     assert_equal "ああ", arg_test("あア", :hiragana => true)
     assert_equal "A", arg_test("<i>A</i>", :strip_tags => true)
+    assert_equal "AB", arg_test("A\xffB", :scrub => true)
     assert_equal "あ\nあ\n", arg_test("あ\r\nあ\r\n", :enter => true)
     assert_equal "A  A", arg_test(" A  A ", :strip => true)
     assert_equal "A A", arg_test(" A  A ", :squish => true)
